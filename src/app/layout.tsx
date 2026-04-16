@@ -1,13 +1,9 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import Navbar from "@/components/Navbar";
 import "./globals.css";
-import Navbar from "@/core/components/Navbar";
 
-const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "DesignerForum | Yaratıcı Topluluk",
-  description: "Tasarımcılar için vitrin, geri bildirim ve tartışma platformu.",
+export const metadata = {
+  title: "Designer Forum",
+  description: "Tasarımcılar için paylaşım platformu",
 };
 
 export default function RootLayout({
@@ -16,10 +12,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr" className="dark">
-      <body className={`${inter.className} bg-black text-white min-h-screen flex flex-col`}>
+    <html lang="tr">
+      <body className="bg-black text-white min-h-screen flex flex-col">
+        {/* Navbar'ı buraya koyuyoruz */}
         <Navbar />
-        <main className="flex-1 container mx-auto max-w-7xl px-4 py-8">
+        
+        {/* Sayfa içerikleri burada render edilecek */}
+        <main className="flex-1 p-6">
           {children}
         </main>
       </body>

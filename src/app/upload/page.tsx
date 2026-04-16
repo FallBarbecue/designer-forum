@@ -1,17 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
 import { UploadCloud, Image as ImageIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function UploadPage() {
+  const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  
   const [file, setFile] = useState<File | null>(null);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("ui");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
+
+  // Sayfa açıldığında kullanıcının giriş yapıp yapmadığını kontrol et
+  useEffect(() => {
+    async function checkUser() {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        // Giriş yapmamışsa login sayfasına yönlendir
+        router.push("/login");
+      } else {
+        setUser(user);
+      }
+    }
+    checkUser();
+  }, [router]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -21,7 +39,9 @@ export default function UploadPage() {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!file || !title) {
+    
+    // Güvenlik kontrolü: Kullanıcı yoksa veya dosya seçilmemişse engelle
+    if (!file || !title || !user) {
       setMessage("Lütfen bir görsel ve başlık ekleyin.");
       return;
     }
@@ -30,27 +50,32 @@ export default function UploadPage() {
     setMessage("");
 
     try {
-      // 1. Görseli Supabase Storage'a Yükle (Daha önce düzelttiğimiz 'design' bucket'ı)
+      // 1. Görseli Supabase Storage'a Yükle
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
-
+      
       const { error: uploadError } = await supabase.storage
         .from('design')
-        .upload(filePath, file);
+        .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
       // 2. Public URL'i al
       const { data: { publicUrl } } = supabase.storage
         .from('design')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
 
-      // 3. Veritabanına kaydet
+      // 3. Veritabanına kaydet (Kullanıcı kimliği ile birlikte)
       const { error: dbError } = await supabase
         .from('posts')
         .insert([
-          { title, description, category, image_url: publicUrl }
+          { 
+            title, 
+            description, 
+            category, 
+            image_url: publicUrl,
+            user_id: user.id // <-- Tasarımı yükleyen kişiye bağlıyoruz
+          }
         ]);
 
       if (dbError) throw dbError;
@@ -66,6 +91,15 @@ export default function UploadPage() {
       setLoading(false);
     }
   };
+
+  // Oturum kontrolü yapılırken boş bir yükleme ekranı göster
+  if (!user) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-purple-500 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 bg-gray-900 border border-gray-800 rounded-xl">

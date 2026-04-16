@@ -37,7 +37,7 @@ export default async function Home() {
       {/* Masonry Grid (Pinterest Tarzı) */}
       <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
         {posts.map((post) => (
-          <div key={post.id} className="break-inside-avoid relative group rounded-xl overflow-hidden bg-gray-900 border border-gray-800">
+          <Link href={`/design/${post.id}`} key={post.id} className="block break-inside-avoid relative group rounded-xl overflow-hidden bg-gray-900 border border-gray-800">
             
             {/* Görsel */}
             <Image
@@ -46,33 +46,21 @@ export default async function Home() {
               width={600}
               height={800}
               className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
-              priority // LCP uyarısını çözen sihirli kelime
+              priority 
             />
 
-            {/* Hover Durumunda Çıkan Overlay */}
+            {/* Hover Overlay... (Burası aynı kalacak) */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-              
-              <h3 className="text-white font-bold text-lg leading-tight mb-1 line-clamp-1">
-                {post.title}
-              </h3>
-              
+              <h3 className="text-white font-bold text-lg leading-tight mb-1 line-clamp-1">{post.title}</h3>
               <div className="flex justify-between items-center mt-2">
-                <span className="bg-purple-600/80 text-white text-xs font-semibold px-2 py-1 rounded-md uppercase tracking-wider">
-                  {post.category}
-                </span>
-                
+                <span className="bg-purple-600/80 text-white text-xs font-semibold px-2 py-1 rounded-md uppercase tracking-wider">{post.category}</span>
                 <div className="flex gap-3 text-gray-300">
-                  <button className="flex items-center gap-1 hover:text-white transition">
-                    <Heart className="h-4 w-4" /> <span className="text-xs">0</span>
-                  </button>
-                  <button className="flex items-center gap-1 hover:text-white transition">
-                    <MessageCircle className="h-4 w-4" /> <span className="text-xs">0</span>
-                  </button>
+                  <span className="flex items-center gap-1"><Heart className="h-4 w-4" /> <span className="text-xs">0</span></span>
+                  <span className="flex items-center gap-1"><MessageCircle className="h-4 w-4" /> <span className="text-xs">0</span></span>
                 </div>
               </div>
-
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
