@@ -1,13 +1,18 @@
 version: '3.8'
 
 services:
-  designer-forum:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: designer_forum_app
+  postgres_db:
+    image: postgres:15
+    container_name: forum_db
+    environment:
+      POSTGRES_USER: forum_user
+      POSTGRES_PASSWORD: forum_password_123 # Güvenli bir şifre
+      POSTGRES_DB: forum_db
     ports:
-      - "3000:3000"
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
     restart: always
-    env_file:
-      - .env.local
+
+volumes:
+  postgres_data:

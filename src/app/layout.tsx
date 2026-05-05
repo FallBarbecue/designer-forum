@@ -1,9 +1,14 @@
-import Navbar from "@/components/Navbar";
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
 import "./globals.css";
+import AuthProvider from "@/providers/AuthProvider";
+import Navbar from "@/components/Navbar"; // Navbar'ı import ettik (Dizinini kendi projene göre ayarla)
 
-export const metadata = {
-  title: "Designer Forum",
-  description: "Tasarımcılar için paylaşım platformu",
+const inter = Inter({ subsets: ["latin"] });
+
+export const metadata: Metadata = {
+  title: "FikirTasarım | Forum ve Market",
+  description: "Tasarım ve Yazılım Ekosistemi",
 };
 
 export default function RootLayout({
@@ -13,14 +18,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr">
-      <body className="bg-black text-white min-h-screen flex flex-col">
-        {/* Navbar'ı buraya koyuyoruz */}
-        <Navbar />
-        
-        {/* Sayfa içerikleri burada render edilecek */}
-        <main className="flex-1 p-6">
-          {children}
-        </main>
+      <body className={inter.className}>
+        <AuthProvider>
+          {/* Navbar'ı her sayfanın en üstünde görünecek şekilde buraya koyuyoruz */}
+          <Navbar />
+          
+          {/* Sayfa içerikleri burada render edilecek */}
+          <main className="min-h-screen bg-gray-50">
+            {children}
+          </main>
+        </AuthProvider>
       </body>
     </html>
   );

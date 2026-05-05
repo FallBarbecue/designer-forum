@@ -1,0 +1,137 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// --- FORUM MİMARİSİ ---
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  password      String?
+  image         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  posts         Post[]
+  comments      Comment[]
+  
+  // Yeni: Dükkan ve Sipariş İlişkileri
+  shop          Shop?     // Bir kullanıcının en fazla 1 dükkanı olabilir
+  orders        Order[]   // Kullanıcının verdiği siparişler
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  description String?
+  
+  posts       Post[]
+}
+
+model Post {
+  id          String    @id @default(cuid())
+  title       String
+  content     String    @db.Text
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+  
+  comments    Comment[]
+}
+
+model Comment {
+  id          String   @id @default(cuid())
+  content     String   @db.Text
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  postId      String
+  post        Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+}
+
+// --- PAZARYERİ VE DÜKKAN MİMARİSİ ---
+
+model Shop {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  description String?   @db.Text
+  logoUrl     String?   // Supabase'den gelecek resim linki
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  ownerId     String    @unique
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+
+  products    Product[]
+}
+
+model Product {
+  id          String    @id @default(cuid())
+  title       String
+  description String    @db.Text
+  price       Float     // Iyzico entegrasyonu için ondalıklı (örn: 150.50)
+  stock       Int       @default(1)
+  images      String[]  // Supabase görsel linkleri dizisi
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  shopId      String
+  shop        Shop      @relation(fields: [shopId], references: [id], onDelete: Cascade)
+
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id            String    @id @default(cuid())
+  totalAmount   Float
+  status        String    @default("PENDING") // PENDING, SUCCESS, FAILED
+  paymentId     String?   // Iyzico'dan dönecek referans kodu
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  buyerId       String
+  buyer         User      @relation(fields: [buyerId], references: [id])
+
+  items         OrderItem[]
+}
+
+model OrderItem {
+  id          String    @id @default(cuid())
+  price       Float     // Ürün fiyatı değişirse eski fişler bozulmasın diye buraya kaydedilir
+  quantity    Int       @default(1)
+
+  orderId     String
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+}
+
+model Order {
+  id        String   @id @default(cuid())
+  userId    String   // Alan kişi
+  productId String   // Alınan ürün
+  price     Float    // O anki satılan fiyat
+  createdAt DateTime @default(now())
+
+  // İlişkiler
+  user      User     @relation(fields: [userId], references: [id])
+  product   Product  @relation(fields: [productId], references: [id])
+}
